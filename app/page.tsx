@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-import type { Domain, DomainFilters, DomainSort } from './types/domain';
+import type { Domain, DomainFilterState, DomainSort } from './types/domain';
 import { filterDomains, sortDomains, parseCSVToDomains, domainsToCSV } from './utils/domain';
 import DomainTable from './components/DomainTable';
 import DomainFilters from './components/DomainFilters';
@@ -15,7 +15,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDomain, setEditingDomain] = useState<Domain | undefined>();
-  const [filters, setFilters] = useState<DomainFilters>({
+  const [filters, setFilters] = useState<DomainFilterState>({
     searchTerm: '',
     niche: '',
     brandingPotential: '',
@@ -26,7 +26,7 @@ export default function Home() {
   });
 
   useEffect(() => {
-    fetchDomains();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -35,15 +35,16 @@ export default function Home() {
     setFilteredDomains(sorted);
   }, [domains, filters, sort]);
 
-  const fetchDomains = async () => {
+  const loadInitialData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/domains');
+      const response = await fetch('/domains.csv');
       if (!response.ok) {
-        throw new Error('도메인 목록을 가져오는데 실패했습니다');
+        throw new Error('CSV 파일을 불러오는데 실패했습니다');
       }
-      const data = await response.json();
-      setDomains(data);
+      const csvContent = await response.text();
+      const parsedDomains = parseCSVToDomains(csvContent);
+      setDomains(parsedDomains);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
@@ -65,46 +66,29 @@ export default function Home() {
 
   const handleDeleteDomain = async (id: number) => {
     if (!confirm('정말로 이 도메인을 삭제하시겠습니까?')) return;
-
-    try {
-      const response = await fetch(`/api/domains?id=${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('도메인 삭제에 실패했습니다');
-      }
-
-      setDomains(domains.filter((d) => d.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
-    }
+    setDomains(domains.filter((d) => d.id !== id));
   };
 
   const handleSaveDomain = async (domainData: Partial<Domain>) => {
     try {
-      const url = editingDomain
-        ? `/api/domains?id=${editingDomain.id}`
-        : '/api/domains';
-      const method = editingDomain ? 'PUT' : 'POST';
+      const newDomain: Domain = {
+        id: editingDomain?.id || domains.length + 1,
+        name: domainData.name || '',
+        length: domainData.length || 0,
+        extension: domainData.extension || '',
+        keywords: domainData.keywords || '',
+        niche: domainData.niche || '',
+        estimatedValue: domainData.estimatedValue || 0,
+        searchVolume: domainData.searchVolume || 0,
+        brandingPotential: domainData.brandingPotential || '',
+        status: domainData.status || '',
+        notes: domainData.notes || '',
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(domainData),
-      });
-
-      if (!response.ok) {
-        throw new Error('도메인 저장에 실패했습니다');
-      }
-
-      const savedDomain = await response.json();
       if (editingDomain) {
-        setDomains(domains.map((d) => (d.id === savedDomain.id ? savedDomain : d)));
+        setDomains(domains.map((d) => (d.id === newDomain.id ? newDomain : d)));
       } else {
-        setDomains([...domains, savedDomain]);
+        setDomains([...domains, newDomain]);
       }
 
       setIsModalOpen(false);

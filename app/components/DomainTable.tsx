@@ -55,8 +55,8 @@ export default function DomainTable({ domains, onEdit, onDelete, onSort, sort }:
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.extension}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.keywords}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.niche}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${domain.estimatedValue}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.searchVolume}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${domain.estimatedValue.toLocaleString()}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.searchVolume.toLocaleString()}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.brandingPotential}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.status}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.notes}</td>

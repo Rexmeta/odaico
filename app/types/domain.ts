@@ -20,7 +20,7 @@ export interface DomainSort {
   order: SortOrder;
 }
 
-export interface DomainFilters {
+export interface DomainFilterState {
   searchTerm: string;
   niche: string;
   brandingPotential: string;

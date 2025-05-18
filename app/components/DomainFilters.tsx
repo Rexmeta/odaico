@@ -1,23 +1,11 @@
-import type { DomainFilters } from '../types/domain';
+import type { DomainFilterState } from '../types/domain';
 
 interface DomainFiltersProps {
-  filters: DomainFilters;
-  onFilterChange: (filters: DomainFilters) => void;
+  filters: DomainFilterState;
+  onFilterChange: (filters: DomainFilterState) => void;
 }
 
 export default function DomainFilters({ filters, onFilterChange }: DomainFiltersProps) {
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({ ...filters, searchTerm: e.target.value });
-  };
-
-  const handleNicheChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onFilterChange({ ...filters, niche: e.target.value });
-  };
-
-  const handleBrandingPotentialChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onFilterChange({ ...filters, brandingPotential: e.target.value });
-  };
-
   return (
     <div className="bg-white p-4 rounded-lg shadow mb-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -29,7 +17,7 @@ export default function DomainFilters({ filters, onFilterChange }: DomainFilters
             type="text"
             id="search"
             value={filters.searchTerm}
-            onChange={handleSearchChange}
+            onChange={(e) => onFilterChange({ ...filters, searchTerm: e.target.value })}
             placeholder="도메인 이름 또는 키워드로 검색"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
@@ -41,7 +29,7 @@ export default function DomainFilters({ filters, onFilterChange }: DomainFilters
           <select
             id="niche"
             value={filters.niche}
-            onChange={handleNicheChange}
+            onChange={(e) => onFilterChange({ ...filters, niche: e.target.value })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="">전체</option>
@@ -59,7 +47,7 @@ export default function DomainFilters({ filters, onFilterChange }: DomainFilters
           <select
             id="brandingPotential"
             value={filters.brandingPotential}
-            onChange={handleBrandingPotentialChange}
+            onChange={(e) => onFilterChange({ ...filters, brandingPotential: e.target.value })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="">전체</option>
