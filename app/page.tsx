@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Domain {
   id: number;
@@ -9,47 +9,165 @@ interface Domain {
   isDelegated: boolean;
 }
 
-export default function Home() {
-  const [domains, setDomains] = useState<Domain[]>([
-    { id: 57, name: "augur.kr", expiryDate: "2025.06.01 ~ 2025-07-01", status: "사용중", nameserver: "ns1.ksdom.kr", isDelegated: true },
-    { id: 56, name: "html5test.net", expiryDate: "2025.06.04 ~ 2025-07-04", status: "사용중", nameserver: "ns1.a2hosting.com", isDelegated: false },
-    // ... 나머지 도메인 데이터
-  ]);
+type SortField = 'id' | 'name' | 'expiryDate' | 'status' | 'nameserver';
+type SortOrder = 'asc' | 'desc';
 
+export default function Home() {
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [filteredDomains, setFilteredDomains] = useState<Domain[]>([]);
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDomain, setNewDomain] = useState<Partial<Domain>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterDelegated, setFilterDelegated] = useState<string>("all");
+  const [sortField, setSortField] = useState<SortField>('id');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  // 도메인 목록 가져오기
+  useEffect(() => {
+    fetchDomains();
+  }, []);
+
+  // 검색어나 필터가 변경될 때마다 도메인 목록 필터링
+  useEffect(() => {
+    let result = domains;
+
+    // 검색어로 필터링
+    if (searchTerm) {
+      result = result.filter(domain =>
+        domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        domain.nameserver.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // 상태로 필터링
+    if (filterStatus !== "all") {
+      result = result.filter(domain => domain.status === filterStatus);
+    }
+
+    // 위임 여부로 필터링
+    if (filterDelegated !== "all") {
+      const isDelegated = filterDelegated === "true";
+      result = result.filter(domain => domain.isDelegated === isDelegated);
+    }
+
+    // 정렬
+    result.sort((a, b) => {
+      let comparison = 0;
+      if (sortField === 'id') {
+        comparison = a.id - b.id;
+      } else {
+        comparison = String(a[sortField]).localeCompare(String(b[sortField]));
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    setFilteredDomains(result);
+  }, [domains, searchTerm, filterStatus, filterDelegated, sortField, sortOrder]);
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (field !== sortField) return '↕';
+    return sortOrder === 'asc' ? '↑' : '↓';
+  };
+
+  const fetchDomains = async () => {
+    try {
+      const response = await fetch('/api/domains');
+      if (!response.ok) throw new Error('Failed to fetch domains');
+      const data = await response.json();
+      setDomains(data);
+      setFilteredDomains(data);
+    } catch (err) {
+      setError('도메인 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = (domain: Domain) => {
     setEditingDomain(domain);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm("정말로 이 도메인을 삭제하시겠습니까?")) {
-      setDomains(domains.filter(domain => domain.id !== id));
+      try {
+        const response = await fetch(`/api/domains?id=${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete domain');
+        setDomains(domains.filter(domain => domain.id !== id));
+      } catch (err) {
+        setError('도메인 삭제에 실패했습니다.');
+      }
     }
   };
 
-  const handleSave = (domain: Domain) => {
-    setDomains(domains.map(d => d.id === domain.id ? domain : d));
-    setEditingDomain(null);
+  const handleSave = async (domain: Domain) => {
+    try {
+      const response = await fetch('/api/domains', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(domain),
+      });
+      if (!response.ok) throw new Error('Failed to update domain');
+      const updatedDomain = await response.json();
+      setDomains(domains.map(d => d.id === updatedDomain.id ? updatedDomain : d));
+      setEditingDomain(null);
+    } catch (err) {
+      setError('도메인 수정에 실패했습니다.');
+    }
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (newDomain.name && newDomain.expiryDate && newDomain.nameserver) {
-      const domain: Domain = {
-        id: Math.max(...domains.map(d => d.id)) + 1,
-        name: newDomain.name,
-        expiryDate: newDomain.expiryDate,
-        status: "사용중",
-        nameserver: newDomain.nameserver,
-        isDelegated: false
-      };
-      setDomains([...domains, domain]);
-      setShowAddModal(false);
-      setNewDomain({});
+      try {
+        const response = await fetch('/api/domains', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newDomain),
+        });
+        if (!response.ok) throw new Error('Failed to add domain');
+        const addedDomain = await response.json();
+        setDomains([...domains, addedDomain]);
+        setShowAddModal(false);
+        setNewDomain({});
+      } catch (err) {
+        setError('도메인 추가에 실패했습니다.');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">로딩 중...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,22 +182,82 @@ export default function Home() {
           </button>
         </div>
 
+        {/* 검색 및 필터 */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <input
+              type="text"
+              placeholder="도메인 또는 네임서버 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">모든 상태</option>
+              <option value="사용중">사용중</option>
+              <option value="만료">만료</option>
+            </select>
+          </div>
+          <div>
+            <select
+              value={filterDelegated}
+              onChange={(e) => setFilterDelegated(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">모든 위임 상태</option>
+              <option value="true">위임됨</option>
+              <option value="false">위임되지 않음</option>
+            </select>
+          </div>
+        </div>
+
         {/* 도메인 목록 테이블 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도메인</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">만료일</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">네임서버</th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('id')}
+                >
+                  ID {getSortIcon('id')}
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('name')}
+                >
+                  도메인 {getSortIcon('name')}
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('expiryDate')}
+                >
+                  만료일 {getSortIcon('expiryDate')}
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('status')}
+                >
+                  상태 {getSortIcon('status')}
+                </th>
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('nameserver')}
+                >
+                  네임서버 {getSortIcon('nameserver')}
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">위임</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {domains.map((domain) => (
+              {filteredDomains.map((domain) => (
                 <tr key={domain.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{domain.name}</td>
