@@ -1,11 +1,36 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// PrismaClient를 싱글톤으로 관리
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+// 데이터베이스 연결 테스트
+async function testConnection() {
+  try {
+    await prisma.$connect();
+    console.log('Database connection successful');
+    return true;
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return false;
+  }
+}
 
 // GET /api/domains
 export async function GET() {
   try {
+    // 데이터베이스 연결 테스트
+    const isConnected = await testConnection();
+    if (!isConnected) {
+      throw new Error('Database connection failed');
+    }
+
     const domains = await prisma.domain.findMany({
       orderBy: {
         id: 'desc'
@@ -15,7 +40,11 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching domains:', error);
     return NextResponse.json(
-      { error: "도메인 목록을 가져오는데 실패했습니다", details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: "도메인 목록을 가져오는데 실패했습니다", 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        connectionError: error instanceof Error && error.message === 'Database connection failed'
+      },
       { status: 500 }
     );
   }
