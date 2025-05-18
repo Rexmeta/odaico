@@ -1,11 +1,57 @@
-Domain Name,Length,Extension,Keyword(s),Niche/Industry,Est. Value ($),Search Volume,Branding Potential,Status,Notes
-augur.kr,5,.kr,augur,Web3 / Prediction,1200,2400/mo,Medium,In Use,의미 있는 단어, 짧음
-html5test.net,11,.net,html5 test,Tech / Testing,800,3200/mo,Low,In Use,특정 테스트 용도에 적합
-culmeat.com,8,.com,cult meat,Food / DTC,2000,700/mo,Medium,In Use,발음/철자 약간 애매
-things2buy.co.kr,12,.co.kr,things to buy,E-commerce,2500,5500/mo,High,In Use,실제 쇼핑몰 이름으로 좋음
-calibra.kr,7,.kr,calibra,Fintech / AI,3000,1800/mo,High,In Use,페이스북 리브라 관련성 있음
-arteef.com,6,.com,art teef,Art / Fashion,1600,400/mo,Medium,In Use,짧고 브랜더블
-metabeing.net,10,.net,meta being,Metaverse / AI,4500,2000/mo,High,In Use,메타버스/정체성 컨셉에 어울림
-xobot.net,6,.net,xobot,Tech / Robotics,3000,1100/mo,High,In Use,짧고 브랜드 느낌
-galaxydapps.com,13,.com,galaxy dapps,Web3 / Apps,3800,1600/mo,High,In Use,Dapps 관련 강한 키워드 조합
-sexhormone.net,12,.net,sex hormone,Health / Science,2200,6500/mo,Low,In Use,민감하지만 타겟팅 강력 
+도메인,길이,확장자,키워드,연관 비즈니스,예상 가치($),검색량,브랜딩 잠재력,메모
+augur.kr,5,.kr,augur,Web3 / 예측 시장,1200,2400/mo,중간,"의미 있는 단어이며, 예측 기술 서비스에 적합함"
+html5test.net,11,.net,html5,test,기술 / 테스트,800,3200/mo,낮음,"HTML5 렌더링 및 브라우저 테스트 관련 도구/서비스용"
+culmeat.com,8,.com,cul,meat,식품 / DTC,2000,700/mo,중간,"컬트+고기 조합의 감성적인 정육/음식 관련 브랜드 가능성"
+things2buy.co.kr,12,.co.kr,things to buy,전자상거래,2500,5500/mo,높음,"쇼핑몰, 리뷰사이트, 위시리스트 앱 등 다양한 커머스에 적합"
+things2buy.kr,12,.kr,things to buy,전자상거래,2200,5500/mo,높음,"위와 동일 브랜드의 한국 도메인 확장판"
+calibra.kr,7,.kr,calibra,핀테크 / AI,3000,1800/mo,높음,"Facebook의 Libra 프로젝트 관련 명칭과 연관"
+calibra.co.kr,7,.co.kr,calibra,핀테크 / AI,2800,1800/mo,높음,"위와 동일 브랜드의 한국 기업용 버전"
+arteef.com,6,.com,art,teef,예술 / 패션,1600,400/mo,중간,"예술+치아 또는 패션 감성 혼합, 브랜드용으로 창의적임"
+metabeing.net,10,.net,meta,being,메타버스 / AI,4500,2000/mo,높음,"자아, 존재 관련 메타버스 및 정신건강 브랜드로 유망"
+metabeings.net,11,.net,meta,beings,메타버스 / AI,4300,1900/mo,높음,"단체/집단 지향 메타버스 캐릭터 또는 커뮤니티명"
+galaxydapps.com,13,.com,galaxy,dapps,Web3 / 앱,3800,1600/mo,높음,"분산형 앱(dApps) 서비스, 우주 테마 스타트업에 적합"
+xobot.net,6,.net,xobot,기술 / 로보틱스,3000,1100/mo,높음,"로봇 또는 봇 기반 기술 회사에 적합, 짧고 기억 쉬움"
+sexhormone.net,12,.net,sex,hormone,건강 / 과학,2200,6500/mo,낮음,"성 호르몬 관련 의학/헬스케어 정보 서비스에 사용 가능"
+vxv.co.kr,3,.co.kr,vxv,Tech / Crypto,2500,500/mo,High,"초단어형 3글자, 블록체인 혹은 브랜드 네임으로 적합"
+quzhongxin.org,11,.org,quzhongxin,Education / Org,1300,200/mo,Medium,"중국어 기반 비영리 혹은 교육 기관용 도메인"
+quzhongxin.net,11,.net,quzhongxin,Education / Org,1200,200/mo,Medium,"위와 동일 브랜드의 기술 기반 버전"
+bioxinpian.com,11,.com,bioxinpian,BioTech / Medical,2700,300/mo,Medium,"생명공학 또는 약품 브랜드로 활용 가능, 발음 유니크함"
+baqisai.com,8,.com,baqisai,Brand / General,1600,150/mo,Low,"브랜드화 가능하지만 뉘앙스 모호"
+bitebi.com,7,.com,bitebi,Crypto / Finance,1900,1000/mo,Medium,"비트코인 연상되는 이름, 중문권 타겟 가능"
+jiamiche.org,9,.org,jiamiche,Education / Culture,1000,200/mo,Low,"문화/교육 비영리 단체 혹은 커뮤니티용"
+quzhongxinhua.net,15,.net,quzhongxinhua,Media / China,900,100/mo,Low,"중국어 뉴스/미디어 사이트 용도로 적합"
+jiamiche.com,9,.com,jiamiche,Brand / Personal,1300,300/mo,Medium,"개인 브랜드 혹은 커뮤니티용 브랜드 이름"
+jiamiche.net,9,.net,jiamiche,Brand / Network,1200,300/mo,Medium,"위와 동일한 브랜드의 기술/네트워크 기반 확장"
+algorand.co.kr,8,.co.kr,algorand,Crypto / Blockchain,3400,1200/mo,High,"알고랜드 프로젝트와 연관된 도메인, 한국 대상"
+algorand.kr,8,.kr,algorand,Crypto / Blockchain,3200,1200/mo,High,"위 도메인의 짧은 한국 국가 확장 버전"
+zelia.kr,5,.kr,zelia,Fashion / Brand,1500,500/mo,Medium,"브랜드 네임으로 적합한 감성적 짧은 단어"
+aiwriter.co.kr,9,.co.kr,aiwriter,AI / Content,3000,1800/mo,High,"AI 글쓰기 서비스, 한국 비즈니스에 적합"
+aiwriter.kr,9,.kr,aiwriter,AI / Content,2900,1800/mo,High,"위 도메인의 국가 확장 버전"
+bioepis.net,8,.net,bioepis,BioTech / Medical,2400,600/mo,Medium,"바이오 의약품 브랜드명으로 활용 가능"
+jiteji.com,7,.com,jiteji,Brand / China,1500,200/mo,Low,"중국 브랜드 혹은 상표 관련으로 사용 가능"
+jiteji.net,7,.net,jiteji,Brand / China,1300,200/mo,Low,"기술 관련 브랜드 보완용"
+galaxydapps.net,13,.net,galaxy,dapps,Web3 / Apps,3500,1500/mo,High,"galaxydapps.com의 보완 네트워크 도메인"
+okdapps.com,8,.com,ok,dapps,Web3 / Apps,2800,1200/mo,Medium,"짧고 기억하기 쉬운 Dapp 브랜드"
+okdapps.net,8,.net,ok,dapps,Web3 / Apps,2600,1200/mo,Medium,"보완 도메인"
+blockchainkeystore.net,21,.net,blockchain,keystore,Crypto / Security,3200,1100/mo,Medium,"블록체인 키 저장소, 보안 관련 비즈니스에 적합"
+duoaile.org,8,.org,duoaile,Relationship / NGO,1100,300/mo,Low,"중국어 기반 커뮤니티, 비영리용"
+duoaile.com,8,.com,duoaile,Relationship / Dating,1400,300/mo,Low,"중국어 감성 데이팅 앱/서비스용"
+duoaile.net,8,.net,duoaile,Relationship / Service,1300,300/mo,Low,"기술 기반 커뮤니티용"
+btobkorea.com,10,.com,btob,korea,B2B / Marketing,2600,1000/mo,Medium,"한국 대상 B2B 플랫폼, 브랜드명 직관적"
+daicos.co.kr,9,.co.kr,daicos,Crypto / ICO,2000,600/mo,Medium,"ICO 서비스, 한국 내 블록체인 프로젝트용"
+daicos.kr,7,.kr,daicos,Crypto / ICO,1900,600/mo,Medium,"짧고 기억 쉬운 국가확장 도메인"
+odaico.com,7,.com,odaico,Crypto / ICO,2200,500/mo,Medium,"'오픈 다이코' 느낌, ICO 브랜드에 적합"
+godaico.com,8,.com,godaico,Crypto / ICO,2100,500/mo,Medium,"'Go Daico', 긍정적 액션 느낌의 ICO 브랜드"
+mothle.com,7,.com,mothle,Games / Puzzle,3000,900/mo,Medium,"Wordle류 게임 이름으로 적합, 발음 쉬움"
+mothle.net,7,.net,mothle,Games / Puzzle,2800,900/mo,Medium,"보완용 기술 도메인"
+benjiku.com,8,.com,benjiku,Brand / Personal,1600,300/mo,Low,"개인 브랜드 또는 닉네임 기반 프로젝트에 사용 가능"
+bixubei.com,8,.com,bixubei,BioTech / Brand,1700,300/mo,Low,"발음 유니크한 생명공학/뷰티 브랜드에 적합"
+bixubei.net,8,.net,bixubei,BioTech / Brand,1500,300/mo,Low,"보완용 기술 버전"
+zigjob.com,7,.com,zig,job,HR / Platform,2500,1000/mo,Medium,"구인/구직 관련 서비스 플랫폼으로 적합"
+zigjob.net,7,.net,zig,job,HR / Platform,2300,1000/mo,Medium,"보완용 기술 도메인"
+becoiner.com,9,.com,becoiner,Crypto / Blog,2000,800/mo,Medium,"코인 관련 개인 브랜드 또는 블로그에 적합"
+becoiner.net,9,.net,becoiner,Crypto / Blog,1800,800/mo,Medium,"보완용 기술 도메인"
+untacter.com,9,.com,untacter,Health / Post-COVID,2700,1000/mo,Medium,"비대면 시대 연관 브랜드, 건강/테크 서비스 가능"
+untacter.net,9,.net,untacter,Health / Post-COVID,2500,1000/mo,Medium,"위의 보완 기술 도메인"
+untactor.com,9,.com,untactor,Health / Post-COVID,2600,1000/mo,Medium,"비슷한 의미로 대체어 느낌, 보완 도메인"
+untactor.net,9,.net,untactor,Health / Post-COVID,2400,1000/mo,Medium,"보완 기술 도메인"

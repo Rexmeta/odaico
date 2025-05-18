@@ -2,554 +2,247 @@
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-
-interface Domain {
-  id: number;
-  name: string;
-  expiryDate: string;
-  status: string;
-  nameserver: string;
-  isDelegated: boolean;
-  length: number;
-  extension: string;
-  keywords: string;
-  niche: string;
-  estimatedValue: number;
-  searchVolume: string;
-  brandingPotential: string;
-  notes: string;
-}
-
-type SortField = 'id' | 'name' | 'expiryDate' | 'status' | 'nameserver';
-type SortOrder = 'asc' | 'desc';
+import type { Domain, DomainFilters, DomainSort } from './types/domain';
+import { filterDomains, sortDomains, parseCSVToDomains, domainsToCSV } from './utils/domain';
+import DomainTable from './components/DomainTable';
+import DomainFilters from './components/DomainFilters';
+import DomainModal from './components/DomainModal';
 
 export default function Home() {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [filteredDomains, setFilteredDomains] = useState<Domain[]>([]);
-  const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newDomain, setNewDomain] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterDelegated, setFilterDelegated] = useState<string>("all");
-  const [sortField, setSortField] = useState<SortField>('id');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDomain, setEditingDomain] = useState<Domain | undefined>();
+  const [filters, setFilters] = useState<DomainFilters>({
+    searchTerm: '',
+    niche: '',
+    brandingPotential: '',
+  });
+  const [sort, setSort] = useState<DomainSort>({
+    field: 'name',
+    order: 'asc',
+  });
 
-  // 도메인 목록 가져오기
   useEffect(() => {
     fetchDomains();
   }, []);
 
-  // 검색어나 필터가 변경될 때마다 도메인 목록 필터링
   useEffect(() => {
-    let result = domains;
-
-    // 검색어로 필터링
-    if (searchTerm) {
-      result = result.filter(domain =>
-        domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        domain.nameserver.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // 상태로 필터링
-    if (filterStatus !== "all") {
-      result = result.filter(domain => domain.status === filterStatus);
-    }
-
-    // 위임 여부로 필터링
-    if (filterDelegated !== "all") {
-      const isDelegated = filterDelegated === "true";
-      result = result.filter(domain => domain.isDelegated === isDelegated);
-    }
-
-    // 정렬
-    result.sort((a, b) => {
-      let comparison = 0;
-      if (sortField === 'id') {
-        comparison = a.id - b.id;
-      } else {
-        comparison = String(a[sortField]).localeCompare(String(b[sortField]));
-      }
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    setFilteredDomains(result);
-  }, [domains, searchTerm, filterStatus, filterDelegated, sortField, sortOrder]);
-
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-  };
-
-  const getSortIcon = (field: SortField) => {
-    if (field !== sortField) return '↕';
-    return sortOrder === 'asc' ? '↑' : '↓';
-  };
+    const filtered = filterDomains(domains, filters);
+    const sorted = sortDomains(filtered, sort);
+    setFilteredDomains(sorted);
+  }, [domains, filters, sort]);
 
   const fetchDomains = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/domains');
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '도메인 목록을 가져오는데 실패했습니다');
+        throw new Error('도메인 목록을 가져오는데 실패했습니다');
       }
       const data = await response.json();
       setDomains(data);
-      setFilteredDomains(data);
-    } catch (error) {
-      console.error('Error fetching domains:', error);
-      setError(error instanceof Error ? error.message : '도메인 목록을 가져오는데 실패했습니다');
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = async (id: number) => {
-    try {
-      const domain = domains.find(d => d.id === id);
-      if (!domain) throw new Error('도메인을 찾을 수 없습니다');
-      setEditingDomain(domain);
-    } catch (error) {
-      console.error('Error preparing edit:', error);
-      setError(error instanceof Error ? error.message : '도메인 수정 준비에 실패했습니다');
-    }
+  const handleAddDomain = () => {
+    setEditingDomain(undefined);
+    setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleEditDomain = (id: number) => {
+    const domain = domains.find((d) => d.id === id);
+    setEditingDomain(domain);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteDomain = async (id: number) => {
+    if (!confirm('정말로 이 도메인을 삭제하시겠습니까?')) return;
+
     try {
-      if (!confirm('정말로 이 도메인을 삭제하시겠습니까?')) return;
-      
       const response = await fetch(`/api/domains?id=${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '도메인 삭제에 실패했습니다');
+        throw new Error('도메인 삭제에 실패했습니다');
       }
-      
-      await fetchDomains();
-    } catch (error) {
-      console.error('Error deleting domain:', error);
-      setError(error instanceof Error ? error.message : '도메인 삭제에 실패했습니다');
+
+      setDomains(domains.filter((d) => d.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveDomain = async (domainData: Partial<Domain>) => {
     try {
-      if (!editingDomain) return;
-      
-      const response = await fetch('/api/domains', {
-        method: 'PUT',
+      const url = editingDomain
+        ? `/api/domains?id=${editingDomain.id}`
+        : '/api/domains';
+      const method = editingDomain ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingDomain),
+        body: JSON.stringify(domainData),
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '도메인 수정에 실패했습니다');
+        throw new Error('도메인 저장에 실패했습니다');
       }
-      
-      setEditingDomain(null);
-      await fetchDomains();
-    } catch (error) {
-      console.error('Error saving domain:', error);
-      setError(error instanceof Error ? error.message : '도메인 수정에 실패했습니다');
+
+      const savedDomain = await response.json();
+      if (editingDomain) {
+        setDomains(domains.map((d) => (d.id === savedDomain.id ? savedDomain : d)));
+      } else {
+        setDomains([...domains, savedDomain]);
+      }
+
+      setIsModalOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
     }
   };
 
-  const handleAdd = async () => {
-    try {
-      if (!newDomain.trim()) {
-        setError('도메인 이름을 입력해주세요');
-        return;
-      }
-      
-      const response = await fetch('/api/domains', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newDomain,
-          expiryDate: new Date().toISOString().split('T')[0],
-          nameserver: '',
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '도메인 추가에 실패했습니다');
-      }
-      
-      setNewDomain('');
-      setShowAddModal(false);
-      await fetchDomains();
-    } catch (error) {
-      console.error('Error adding domain:', error);
-      setError(error instanceof Error ? error.message : '도메인 추가에 실패했습니다');
-    }
-  };
-
-  // CSV 파일로 저장
-  const handleExportCSV = () => {
-    const headers = [
-      'Domain Name',
-      'Length',
-      'Extension',
-      'Keyword(s)',
-      'Niche/Industry',
-      'Est. Value ($)',
-      'Search Volume',
-      'Branding Potential',
-      'Status',
-      'Notes'
-    ];
-
-    const csvContent = [
-      headers.join(','),
-      ...domains.map(domain => [
-        domain.name,
-        domain.length,
-        domain.extension,
-        domain.keywords,
-        domain.niche,
-        domain.estimatedValue,
-        domain.searchVolume,
-        domain.brandingPotential,
-        domain.status,
-        domain.notes
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'domains.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // 파일 업로드 처리
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (event) => {
       try {
-        const content = e.target?.result as string;
-        const lines = content.split('\n');
-        const parsedDomains: Domain[] = [];
-
-        lines.forEach(line => {
-          const parts = line.trim().split(',');
-          if (parts.length >= 10) {
-            const [
-              name,
-              length,
-              extension,
-              keywords,
-              niche,
-              estimatedValue,
-              searchVolume,
-              brandingPotential,
-              status,
-              notes
-            ] = parts;
-
-            if (name) {
-              parsedDomains.push({
-                id: parsedDomains.length + 1,
-                name: name.trim(),
-                length: parseInt(length) || 0,
-                extension: extension.trim(),
-                keywords: keywords.trim(),
-                niche: niche.trim(),
-                estimatedValue: parseFloat(estimatedValue) || 0,
-                searchVolume: searchVolume.trim(),
-                brandingPotential: brandingPotential.trim(),
-                status: status.trim(),
-                notes: notes.trim(),
-                expiryDate: new Date().toISOString().split('T')[0],
-                nameserver: '',
-                isDelegated: false
-              });
-            }
-          }
-        });
-
+        const content = event.target?.result as string;
+        const parsedDomains = parseCSVToDomains(content);
         setDomains(parsedDomains);
-        setFilteredDomains(parsedDomains);
         setError(null);
-      } catch (error) {
-        console.error('Error parsing file:', error);
-        setError('파일 파싱 중 오류가 발생했습니다.');
+      } catch (err) {
+        setError('파일을 읽는데 실패했습니다');
       }
     };
-
-    reader.onerror = () => {
-      setError('파일을 읽는 중 오류가 발생했습니다.');
-    };
-
     reader.readAsText(file);
+  };
+
+  const handleExportCSV = () => {
+    const csv = domainsToCSV(domains);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'domains.csv';
+    link.click();
+  };
+
+  const handleSort = (field: DomainSort['field']) => {
+    setSort((prev) => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc',
+    }));
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-red-600">{error}</div>
+      <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+        <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+          <div className="text-center">로딩 중...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">도메인 관리</h1>
-          <div className="flex space-x-4">
-            <label className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
-              파일 업로드
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="hidden"
+    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+      <div className="relative py-3 sm:max-w-7xl sm:mx-auto">
+        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center">
+              <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                도메인 관리 시스템
+              </h1>
+              <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+                도메인 정보를 관리하고 분석하는 시스템
+              </p>
+            </div>
+
+            {error && (
+              <div className="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 flex justify-between items-center">
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleAddDomain}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  새 도메인 추가
+                </button>
+                <label className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                  파일 업로드
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                <button
+                  onClick={handleExportCSV}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  CSV 내보내기
+                </button>
+              </div>
+            </div>
+
+            <DomainFilters filters={filters} onFilterChange={setFilters} />
+
+            <div className="mt-8">
+              <DomainTable
+                domains={filteredDomains}
+                onEdit={handleEditDomain}
+                onDelete={handleDeleteDomain}
+                onSort={handleSort}
+                sort={sort}
               />
-            </label>
-            <button
-              onClick={handleExportCSV}
-              className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-            >
-              CSV 내보내기
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              도메인 추가
-            </button>
-          </div>
-        </div>
-
-        {/* 검색 및 필터 */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="도메인 또는 네임서버 검색..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">모든 상태</option>
-              <option value="사용중">사용중</option>
-              <option value="만료">만료</option>
-            </select>
-          </div>
-          <div>
-            <select
-              value={filterDelegated}
-              onChange={(e) => setFilterDelegated(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">모든 위임 상태</option>
-              <option value="true">위임됨</option>
-              <option value="false">위임되지 않음</option>
-            </select>
-          </div>
-        </div>
-
-        {/* 도메인 목록 테이블 */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도메인</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">길이</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">확장자</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">키워드</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">분야</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">예상 가치</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">검색량</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">브랜딩 잠재력</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">메모</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDomains.map((domain) => (
-                <tr key={domain.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{domain.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.length}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.extension}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.keywords}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.niche}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${domain.estimatedValue}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.searchVolume}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.brandingPotential}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.notes}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(domain.id)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleDelete(domain.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      삭제
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 도메인 추가 모달 */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">도메인 추가</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">도메인</label>
-                  <input
-                    type="text"
-                    value={newDomain}
-                    onChange={(e) => setNewDomain(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">만료일</label>
-                  <input
-                    type="text"
-                    value={new Date().toISOString().split('T')[0]}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">네임서버</label>
-                  <input
-                    type="text"
-                    value=""
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex justify-end space-x-4 mt-6">
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    취소
-                  </button>
-                  <button
-                    onClick={handleAdd}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    추가
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
-        )}
-
-        {/* 도메인 수정 모달 */}
-        {editingDomain && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">도메인 수정</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">도메인</label>
-                  <input
-                    type="text"
-                    value={editingDomain.name}
-                    onChange={(e) => setEditingDomain({ ...editingDomain, name: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">만료일</label>
-                  <input
-                    type="text"
-                    value={editingDomain.expiryDate}
-                    onChange={(e) => setEditingDomain({ ...editingDomain, expiryDate: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">네임서버</label>
-                  <input
-                    type="text"
-                    value={editingDomain.nameserver}
-                    onChange={(e) => setEditingDomain({ ...editingDomain, nameserver: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex justify-end space-x-4 mt-6">
-                  <button
-                    onClick={() => setEditingDomain(null)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    취소
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    저장
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-8 text-center">
-          <Link 
-            href="/domains" 
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            도메인 분석 보기
-          </Link>
         </div>
       </div>
+
+      <DomainModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveDomain}
+        domain={editingDomain}
+        isEditing={!!editingDomain}
+      />
     </div>
   );
 }
