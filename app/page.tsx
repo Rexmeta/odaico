@@ -9,6 +9,14 @@ interface Domain {
   status: string;
   nameserver: string;
   isDelegated: boolean;
+  length: number;
+  extension: string;
+  keywords: string;
+  niche: string;
+  estimatedValue: number;
+  searchVolume: string;
+  brandingPotential: string;
+  notes: string;
 }
 
 type SortField = 'id' | 'name' | 'expiryDate' | 'status' | 'nameserver';
@@ -192,6 +200,112 @@ export default function Home() {
     }
   };
 
+  // CSV 파일로 저장
+  const handleExportCSV = () => {
+    const headers = [
+      'Domain Name',
+      'Length',
+      'Extension',
+      'Keyword(s)',
+      'Niche/Industry',
+      'Est. Value ($)',
+      'Search Volume',
+      'Branding Potential',
+      'Status',
+      'Notes'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...domains.map(domain => [
+        domain.name,
+        domain.length,
+        domain.extension,
+        domain.keywords,
+        domain.niche,
+        domain.estimatedValue,
+        domain.searchVolume,
+        domain.brandingPotential,
+        domain.status,
+        domain.notes
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'domains.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 파일 업로드 처리
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const lines = content.split('\n');
+        const parsedDomains: Domain[] = [];
+
+        lines.forEach(line => {
+          const parts = line.trim().split(',');
+          if (parts.length >= 10) {
+            const [
+              name,
+              length,
+              extension,
+              keywords,
+              niche,
+              estimatedValue,
+              searchVolume,
+              brandingPotential,
+              status,
+              notes
+            ] = parts;
+
+            if (name) {
+              parsedDomains.push({
+                id: parsedDomains.length + 1,
+                name: name.trim(),
+                length: parseInt(length) || 0,
+                extension: extension.trim(),
+                keywords: keywords.trim(),
+                niche: niche.trim(),
+                estimatedValue: parseFloat(estimatedValue) || 0,
+                searchVolume: searchVolume.trim(),
+                brandingPotential: brandingPotential.trim(),
+                status: status.trim(),
+                notes: notes.trim(),
+                expiryDate: new Date().toISOString().split('T')[0],
+                nameserver: '',
+                isDelegated: false
+              });
+            }
+          }
+        });
+
+        setDomains(parsedDomains);
+        setFilteredDomains(parsedDomains);
+        setError(null);
+      } catch (error) {
+        console.error('Error parsing file:', error);
+        setError('파일 파싱 중 오류가 발생했습니다.');
+      }
+    };
+
+    reader.onerror = () => {
+      setError('파일을 읽는 중 오류가 발생했습니다.');
+    };
+
+    reader.readAsText(file);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -213,12 +327,29 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">도메인 관리</h1>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            도메인 추가
-          </button>
+          <div className="flex space-x-4">
+            <label className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
+              파일 업로드
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={handleExportCSV}
+              className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+            >
+              CSV 내보내기
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              도메인 추가
+            </button>
+          </div>
         </div>
 
         {/* 검색 및 필터 */}
@@ -261,51 +392,32 @@ export default function Home() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('id')}
-                >
-                  ID {getSortIcon('id')}
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('name')}
-                >
-                  도메인 {getSortIcon('name')}
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('expiryDate')}
-                >
-                  만료일 {getSortIcon('expiryDate')}
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('status')}
-                >
-                  상태 {getSortIcon('status')}
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('nameserver')}
-                >
-                  네임서버 {getSortIcon('nameserver')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">위임</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도메인</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">길이</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">확장자</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">키워드</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">분야</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">예상 가치</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">검색량</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">브랜딩 잠재력</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">메모</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDomains.map((domain) => (
                 <tr key={domain.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{domain.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.expiryDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.length}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.extension}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.keywords}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.niche}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${domain.estimatedValue}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.searchVolume}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.brandingPotential}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.nameserver}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {domain.isDelegated ? "D" : ""}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.notes}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleEdit(domain.id)}
