@@ -13,7 +13,11 @@ export async function GET() {
     });
     return NextResponse.json(domains);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch domains" }, { status: 500 });
+    console.error('Error fetching domains:', error);
+    return NextResponse.json(
+      { error: "도메인 목록을 가져오는데 실패했습니다", details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -32,7 +36,11 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(newDomain);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to create domain" }, { status: 500 });
+    console.error('Error creating domain:', error);
+    return NextResponse.json(
+      { error: "도메인 생성에 실패했습니다", details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -52,7 +60,11 @@ export async function PUT(request: Request) {
     });
     return NextResponse.json(updatedDomain);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update domain" }, { status: 500 });
+    console.error('Error updating domain:', error);
+    return NextResponse.json(
+      { error: "도메인 수정에 실패했습니다", details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -61,11 +73,23 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id') || '0');
+    
+    if (isNaN(id) || id <= 0) {
+      return NextResponse.json(
+        { error: "유효하지 않은 도메인 ID입니다" },
+        { status: 400 }
+      );
+    }
+
     await prisma.domain.delete({
       where: { id }
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete domain" }, { status: 500 });
+    console.error('Error deleting domain:', error);
+    return NextResponse.json(
+      { error: "도메인 삭제에 실패했습니다", details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 } 

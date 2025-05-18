@@ -19,7 +19,7 @@ export default function Home() {
   const [filteredDomains, setFilteredDomains] = useState<Domain[]>([]);
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newDomain, setNewDomain] = useState<Partial<Domain>>({});
+  const [newDomain, setNewDomain] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,72 +86,109 @@ export default function Home() {
 
   const fetchDomains = async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/domains');
-      if (!response.ok) throw new Error('Failed to fetch domains');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '도메인 목록을 가져오는데 실패했습니다');
+      }
       const data = await response.json();
       setDomains(data);
       setFilteredDomains(data);
-    } catch (err) {
-      setError('도메인 목록을 불러오는데 실패했습니다.');
+    } catch (error) {
+      console.error('Error fetching domains:', error);
+      setError(error instanceof Error ? error.message : '도메인 목록을 가져오는데 실패했습니다');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (domain: Domain) => {
-    setEditingDomain(domain);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (confirm("정말로 이 도메인을 삭제하시겠습니까?")) {
-      try {
-        const response = await fetch(`/api/domains?id=${id}`, {
-          method: 'DELETE',
-        });
-        if (!response.ok) throw new Error('Failed to delete domain');
-        setDomains(domains.filter(domain => domain.id !== id));
-      } catch (err) {
-        setError('도메인 삭제에 실패했습니다.');
-      }
+  const handleEdit = async (id: number) => {
+    try {
+      const domain = domains.find(d => d.id === id);
+      if (!domain) throw new Error('도메인을 찾을 수 없습니다');
+      setEditingDomain(domain);
+    } catch (error) {
+      console.error('Error preparing edit:', error);
+      setError(error instanceof Error ? error.message : '도메인 수정 준비에 실패했습니다');
     }
   };
 
-  const handleSave = async (domain: Domain) => {
+  const handleDelete = async (id: number) => {
     try {
+      if (!confirm('정말로 이 도메인을 삭제하시겠습니까?')) return;
+      
+      const response = await fetch(`/api/domains?id=${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '도메인 삭제에 실패했습니다');
+      }
+      
+      await fetchDomains();
+    } catch (error) {
+      console.error('Error deleting domain:', error);
+      setError(error instanceof Error ? error.message : '도메인 삭제에 실패했습니다');
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!editingDomain) return;
+      
       const response = await fetch('/api/domains', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(domain),
+        body: JSON.stringify(editingDomain),
       });
-      if (!response.ok) throw new Error('Failed to update domain');
-      const updatedDomain = await response.json();
-      setDomains(domains.map(d => d.id === updatedDomain.id ? updatedDomain : d));
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '도메인 수정에 실패했습니다');
+      }
+      
       setEditingDomain(null);
-    } catch (err) {
-      setError('도메인 수정에 실패했습니다.');
+      await fetchDomains();
+    } catch (error) {
+      console.error('Error saving domain:', error);
+      setError(error instanceof Error ? error.message : '도메인 수정에 실패했습니다');
     }
   };
 
   const handleAdd = async () => {
-    if (newDomain.name && newDomain.expiryDate && newDomain.nameserver) {
-      try {
-        const response = await fetch('/api/domains', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newDomain),
-        });
-        if (!response.ok) throw new Error('Failed to add domain');
-        const addedDomain = await response.json();
-        setDomains([...domains, addedDomain]);
-        setShowAddModal(false);
-        setNewDomain({});
-      } catch (err) {
-        setError('도메인 추가에 실패했습니다.');
+    try {
+      if (!newDomain.trim()) {
+        setError('도메인 이름을 입력해주세요');
+        return;
       }
+      
+      const response = await fetch('/api/domains', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newDomain,
+          expiryDate: new Date().toISOString().split('T')[0],
+          nameserver: '',
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '도메인 추가에 실패했습니다');
+      }
+      
+      setNewDomain('');
+      setShowAddModal(false);
+      await fetchDomains();
+    } catch (error) {
+      console.error('Error adding domain:', error);
+      setError(error instanceof Error ? error.message : '도메인 추가에 실패했습니다');
     }
   };
 
@@ -271,7 +308,7 @@ export default function Home() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
-                      onClick={() => handleEdit(domain)}
+                      onClick={() => handleEdit(domain.id)}
                       className="text-blue-600 hover:text-blue-900 mr-4"
                     >
                       수정
@@ -299,8 +336,8 @@ export default function Home() {
                   <label className="block text-sm font-medium text-gray-700">도메인</label>
                   <input
                     type="text"
-                    value={newDomain.name || ""}
-                    onChange={(e) => setNewDomain({ ...newDomain, name: e.target.value })}
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -308,8 +345,7 @@ export default function Home() {
                   <label className="block text-sm font-medium text-gray-700">만료일</label>
                   <input
                     type="text"
-                    value={newDomain.expiryDate || ""}
-                    onChange={(e) => setNewDomain({ ...newDomain, expiryDate: e.target.value })}
+                    value={new Date().toISOString().split('T')[0]}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -317,8 +353,7 @@ export default function Home() {
                   <label className="block text-sm font-medium text-gray-700">네임서버</label>
                   <input
                     type="text"
-                    value={newDomain.nameserver || ""}
-                    onChange={(e) => setNewDomain({ ...newDomain, nameserver: e.target.value })}
+                    value=""
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -382,7 +417,7 @@ export default function Home() {
                     취소
                   </button>
                   <button
-                    onClick={() => handleSave(editingDomain)}
+                    onClick={handleSave}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   >
                     저장
