@@ -3,8 +3,10 @@ const nextConfig = {
   experimental: {
     esmExternals: false,
   },
-  webpack: (config) => {
-    config.externals = [...(config.externals || []), '@prisma/client', 'prisma'];
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), '@prisma/client', 'prisma'];
+    }
     return config;
   },
 }
