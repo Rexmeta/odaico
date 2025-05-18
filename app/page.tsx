@@ -98,8 +98,8 @@ export default function Home() {
         const parsedDomains = parseCSVToDomains(content);
         setDomains(parsedDomains);
         setError(null);
-      } catch (err) {
-        setError('파일을 읽는데 실패했습니다');
+      } catch (error) {
+        setError(error instanceof Error ? error.message : '파일을 읽는데 실패했습니다');
       }
     };
     reader.readAsText(file);

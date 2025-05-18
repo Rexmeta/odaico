@@ -35,27 +35,8 @@ export default function DomainsPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/domains`, {
         cache: 'no-store'
       });
-      const text = await response.text();
-      const lines = text.split('\n');
-      const headers = lines[0].split(',');
-      
-      const parsedDomains = lines.slice(1).map(line => {
-        const values = line.split(',');
-        return {
-          name: values[0],
-          length: parseInt(values[1]),
-          extension: values[2],
-          keywords: values[3],
-          niche: values[4],
-          estimatedValue: parseInt(values[5]),
-          searchVolume: values[6],
-          brandingPotential: values[7],
-          status: values[8],
-          notes: values[9]
-        };
-      });
-
-      setDomains(parsedDomains);
+      const data = await response.json();
+      setDomains(data);
       setError(null);
     } catch (error) {
       console.error('Error loading domains:', error);
