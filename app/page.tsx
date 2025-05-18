@@ -76,12 +76,10 @@ export default function Home() {
         name: domainData.name || '',
         length: domainData.length || 0,
         extension: domainData.extension || '',
-        keywords: domainData.keywords || '',
         niche: domainData.niche || '',
         estimatedValue: domainData.estimatedValue || 0,
         searchVolume: domainData.searchVolume || 0,
         brandingPotential: domainData.brandingPotential || '',
-        status: domainData.status || '',
         notes: domainData.notes || '',
       };
 
