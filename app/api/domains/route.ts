@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import type { Domain } from '@/app/types/domain';
 
 // PrismaClient를 싱글톤으로 관리
 const globalForPrisma = globalThis as unknown as {

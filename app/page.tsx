@@ -82,8 +82,8 @@ export default function Home() {
       }
 
       setIsModalOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다');
     }
   };
 

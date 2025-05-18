@@ -32,7 +32,9 @@ export default function DomainsPage() {
   const fetchDomains = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/domains.csv');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/domains`, {
+        cache: 'no-store'
+      });
       const text = await response.text();
       const lines = text.split('\n');
       const headers = lines[0].split(',');
