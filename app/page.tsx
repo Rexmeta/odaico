@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from 'next/link';
 
 interface Domain {
   id: number;
@@ -539,6 +540,15 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        <div className="mt-8 text-center">
+          <Link 
+            href="/domains" 
+            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            도메인 분석 보기
+          </Link>
+        </div>
       </div>
     </div>
   );
