@@ -15,7 +15,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const domainData = {
+    const domainData: Omit<Domain, 'id'> = {
       name: formData.get('name') as string,
       length: parseInt(formData.get('length') as string),
       extension: formData.get('extension') as string,
