@@ -3,12 +3,10 @@ export interface Domain {
   name: string;
   length: number;
   extension: string;
-  keywords: string;
   niche: string;
   estimatedValue: number;
   searchVolume: number;
   brandingPotential: string;
-  status: string;
   notes: string;
 }
 

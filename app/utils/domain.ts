@@ -3,8 +3,7 @@ import type { Domain, DomainFilterState, DomainSort } from '../types/domain';
 export function filterDomains(domains: Domain[], filters: DomainFilterState): Domain[] {
   return domains.filter((domain) => {
     const matchesSearch = !filters.searchTerm || 
-      domain.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      domain.keywords.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      domain.name.toLowerCase().includes(filters.searchTerm.toLowerCase());
     
     const matchesNiche = !filters.niche || domain.niche === filters.niche;
     const matchesBranding = !filters.brandingPotential || domain.brandingPotential === filters.brandingPotential;
@@ -41,12 +40,10 @@ export function parseCSVToDomains(csvContent: string): Domain[] {
   const nameIndex = headers.findIndex(h => h === '도메인');
   const lengthIndex = headers.findIndex(h => h === '길이');
   const extensionIndex = headers.findIndex(h => h === '확장자');
-  const keywordsIndex = headers.findIndex(h => h === '키워드');
   const nicheIndex = headers.findIndex(h => h === '연관 비즈니스');
   const valueIndex = headers.findIndex(h => h === '예상 가치($)');
   const volumeIndex = headers.findIndex(h => h === '검색량');
   const brandingIndex = headers.findIndex(h => h === '브랜딩 잠재력');
-  const statusIndex = headers.findIndex(h => h === '상태');
   const notesIndex = headers.findIndex(h => h === '메모');
 
   return lines.slice(1)
@@ -62,12 +59,10 @@ export function parseCSVToDomains(csvContent: string): Domain[] {
         name: values[nameIndex] || '',
         length: parseInt(values[lengthIndex] || '0'),
         extension: values[extensionIndex] || '',
-        keywords: values[keywordsIndex] || '',
         niche: values[nicheIndex] || '',
         estimatedValue: parseInt(estimatedValue),
         searchVolume: parseInt(searchVolume),
         brandingPotential: values[brandingIndex] || '',
-        status: values[statusIndex] || '',
         notes: values[notesIndex] || '',
       };
     });
@@ -78,12 +73,10 @@ export function domainsToCSV(domains: Domain[]): string {
     '도메인',
     '길이',
     '확장자',
-    '키워드',
     '연관 비즈니스',
     '예상 가치($)',
     '검색량',
     '브랜딩 잠재력',
-    '상태',
     '메모'
   ];
 
@@ -91,12 +84,10 @@ export function domainsToCSV(domains: Domain[]): string {
     domain.name,
     domain.length.toString(),
     domain.extension,
-    domain.keywords,
     domain.niche,
     domain.estimatedValue.toString(),
     domain.searchVolume.toString(),
     domain.brandingPotential,
-    domain.status,
     domain.notes
   ]);
 

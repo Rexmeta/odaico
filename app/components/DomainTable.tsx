@@ -32,7 +32,6 @@ export default function DomainTable({ domains, onEdit, onDelete, onSort, sort }:
             >
               확장자 {sort.field === 'extension' && (sort.order === 'asc' ? '↑' : '↓')}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">키워드</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">분야</th>
             <th 
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -42,7 +41,6 @@ export default function DomainTable({ domains, onEdit, onDelete, onSort, sort }:
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">검색량</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">브랜딩 잠재력</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">메모</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
           </tr>
@@ -53,12 +51,10 @@ export default function DomainTable({ domains, onEdit, onDelete, onSort, sort }:
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{domain.name}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.length}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.extension}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.keywords}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.niche}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${domain.estimatedValue.toLocaleString()}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.searchVolume.toLocaleString()}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.brandingPotential}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.status}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.notes}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button

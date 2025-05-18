@@ -19,12 +19,10 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
       name: formData.get('name') as string,
       length: parseInt(formData.get('length') as string),
       extension: formData.get('extension') as string,
-      keywords: formData.get('keywords') as string,
       niche: formData.get('niche') as string,
       estimatedValue: parseInt(formData.get('estimatedValue') as string),
       searchVolume: parseInt(formData.get('searchVolume') as string),
       brandingPotential: formData.get('brandingPotential') as string,
-      status: formData.get('status') as string,
       notes: formData.get('notes') as string,
     };
 
@@ -75,18 +73,6 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="extension"
                 defaultValue={domain?.extension}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="keywords" className="block text-sm font-medium text-gray-700">
-                키워드
-              </label>
-              <input
-                type="text"
-                id="keywords"
-                name="keywords"
-                defaultValue={domain?.keywords}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
             </div>
@@ -151,19 +137,6 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 <option value="Medium">중간</option>
                 <option value="Low">낮음</option>
               </select>
-            </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                상태
-              </label>
-              <input
-                type="text"
-                id="status"
-                name="status"
-                defaultValue={domain?.status}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              />
             </div>
             <div className="md:col-span-2">
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
