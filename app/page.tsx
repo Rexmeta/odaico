@@ -69,18 +69,11 @@ export default function Home() {
     setDomains(domains.filter((d) => d.id !== id));
   };
 
-  const handleSaveDomain = async (domainData: Partial<Domain>) => {
+  const handleSaveDomain = async (domainData: Omit<Domain, 'id'>) => {
     try {
       const newDomain: Domain = {
         id: editingDomain?.id || domains.length + 1,
-        name: domainData.name || '',
-        length: domainData.length || 0,
-        extension: domainData.extension || '',
-        niche: domainData.niche || '',
-        estimatedValue: domainData.estimatedValue || 0,
-        searchVolume: domainData.searchVolume || 0,
-        brandingPotential: domainData.brandingPotential || '',
-        notes: domainData.notes || '',
+        ...domainData
       };
 
       if (editingDomain) {
