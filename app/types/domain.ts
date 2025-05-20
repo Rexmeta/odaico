@@ -1,7 +1,6 @@
 export interface Domain {
   id: number;
   name: string;
-  length: number;
   extension: string;
   niche: string;
   estimatedValue: number;
@@ -10,7 +9,7 @@ export interface Domain {
   notes: string;
 }
 
-export type SortField = 'name' | 'length' | 'extension' | 'estimatedValue';
+export type SortField = 'name' | 'extension' | 'estimatedValue';
 export type SortOrder = 'asc' | 'desc';
 
 export interface DomainSort {

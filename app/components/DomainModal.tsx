@@ -36,7 +36,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
           {isEditing ? '도메인 수정' : '새 도메인 추가'}
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 도메인 이름
@@ -47,20 +47,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="name"
                 defaultValue={domain?.name}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="length" className="block text-sm font-medium text-gray-700">
-                길이
-              </label>
-              <input
-                type="number"
-                id="length"
-                name="length"
-                defaultValue={domain?.length}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div>
@@ -73,7 +60,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="extension"
                 defaultValue={domain?.extension}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div>
@@ -85,7 +72,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="niche"
                 defaultValue={domain?.niche}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="">선택하세요</option>
                 <option value="Technology">기술</option>
@@ -105,7 +92,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="estimatedValue"
                 defaultValue={domain?.estimatedValue}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div>
@@ -118,7 +105,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="searchVolume"
                 defaultValue={domain?.searchVolume}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div>
@@ -130,7 +117,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="brandingPotential"
                 defaultValue={domain?.brandingPotential}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="">선택하세요</option>
                 <option value="High">높음</option>
@@ -147,7 +134,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 name="notes"
                 defaultValue={domain?.notes}
                 rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
           </div>
@@ -155,13 +142,13 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
             >
               {isEditing ? '수정' : '추가'}
             </button>

@@ -38,7 +38,6 @@ export function parseCSVToDomains(csvContent: string): Domain[] {
   const headers = lines[0].split(',').map(header => header.trim());
   
   const nameIndex = headers.findIndex(h => h === '도메인');
-  const lengthIndex = headers.findIndex(h => h === '길이');
   const extensionIndex = headers.findIndex(h => h === '확장자');
   const nicheIndex = headers.findIndex(h => h === '연관 비즈니스');
   const valueIndex = headers.findIndex(h => h === '예상 가치($)');
@@ -57,7 +56,6 @@ export function parseCSVToDomains(csvContent: string): Domain[] {
       return {
         id: index + 1,
         name: values[nameIndex] || '',
-        length: parseInt(values[lengthIndex] || '0'),
         extension: values[extensionIndex] || '',
         niche: values[nicheIndex] || '',
         estimatedValue: parseInt(estimatedValue),
@@ -71,7 +69,6 @@ export function parseCSVToDomains(csvContent: string): Domain[] {
 export function domainsToCSV(domains: Domain[]): string {
   const headers = [
     '도메인',
-    '길이',
     '확장자',
     '연관 비즈니스',
     '예상 가치($)',
@@ -82,7 +79,6 @@ export function domainsToCSV(domains: Domain[]): string {
 
   const rows = domains.map(domain => [
     domain.name,
-    domain.length.toString(),
     domain.extension,
     domain.niche,
     domain.estimatedValue.toString(),
