@@ -29,13 +29,13 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">
           {isEditing ? '도메인 수정' : '새 도메인 추가'}
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 도메인 이름
@@ -124,7 +124,7 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
                 <option value="Low">낮음</option>
               </select>
             </div>
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
                 메모
               </label>
@@ -137,17 +137,17 @@ export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing
               />
             </div>
           </div>
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
             >
               {isEditing ? '수정' : '추가'}
             </button>
