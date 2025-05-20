@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Domain } from "./types/domain";
+import { Domain, BrandingPotential } from "./types/domain";
 import { loadDomains, filterDomains, sortDomains } from "./utils/domain";
 import DomainModal from "./components/DomainModal";
 import MobileHeader from "./components/MobileHeader";
@@ -18,7 +18,7 @@ export default function Home() {
     minValue: "",
     maxValue: "",
     minSearchVolume: "",
-    brandingPotential: "",
+    brandingPotential: "" as BrandingPotential | "",
   });
   const [sortConfig, setSortConfig] = useState<{
     field: keyof Domain;
@@ -44,7 +44,7 @@ export default function Home() {
       minValue: filters.minValue ? parseInt(filters.minValue) : undefined,
       maxValue: filters.maxValue ? parseInt(filters.maxValue) : undefined,
       minSearchVolume: filters.minSearchVolume ? parseInt(filters.minSearchVolume) : undefined,
-      brandingPotential: filters.brandingPotential as any || undefined,
+      brandingPotential: filters.brandingPotential || undefined,
     });
 
     // 정렬 적용
@@ -134,7 +134,7 @@ export default function Home() {
             />
             <select
               value={filters.brandingPotential}
-              onChange={(e) => setFilters(prev => ({ ...prev, brandingPotential: e.target.value }))}
+              onChange={(e) => setFilters(prev => ({ ...prev, brandingPotential: e.target.value as BrandingPotential | "" }))}
               className="px-3 py-2 border rounded-md"
             >
               <option value="">브랜딩 잠재력</option>
