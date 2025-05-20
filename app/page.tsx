@@ -136,15 +136,15 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-7xl sm:mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6">
+      <div className="px-4 py-10">
         <div className="relative px-4 py-10 bg-white shadow-xl sm:rounded-3xl sm:p-20">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <div className="text-center">
               <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
                 도메인 관리 시스템
               </h1>
-              <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+              <p className="mt-3 text-xl text-gray-500 sm:mt-4">
                 도메인 정보를 효율적으로 관리하고 분석하는 시스템
               </p>
             </div>

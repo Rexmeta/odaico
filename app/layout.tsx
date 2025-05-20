@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className={inter.className}>
         <nav className="bg-white shadow-sm">
-          <div className="container mx-auto px-4">
+          <div className="px-4">
             <div className="flex justify-between h-16">
               <div className="flex">
                 <div className="flex-shrink-0 flex items-center">
