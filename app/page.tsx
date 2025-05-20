@@ -38,24 +38,14 @@ export default function Home() {
     let result = [...domains];
 
     // 필터 적용
-    if (filters.extension) {
-      result = result.filter(d => d.extension === filters.extension);
-    }
-    if (filters.niche) {
-      result = result.filter(d => d.niche.includes(filters.niche));
-    }
-    if (filters.minValue) {
-      result = result.filter(d => d.estimatedValue >= parseInt(filters.minValue));
-    }
-    if (filters.maxValue) {
-      result = result.filter(d => d.estimatedValue <= parseInt(filters.maxValue));
-    }
-    if (filters.minSearchVolume) {
-      result = result.filter(d => d.searchVolume >= parseInt(filters.minSearchVolume));
-    }
-    if (filters.brandingPotential) {
-      result = result.filter(d => d.brandingPotential === filters.brandingPotential);
-    }
+    result = filterDomains(result, {
+      extension: filters.extension || undefined,
+      niche: filters.niche || undefined,
+      minValue: filters.minValue ? parseInt(filters.minValue) : undefined,
+      maxValue: filters.maxValue ? parseInt(filters.maxValue) : undefined,
+      minSearchVolume: filters.minSearchVolume ? parseInt(filters.minSearchVolume) : undefined,
+      brandingPotential: filters.brandingPotential as any || undefined,
+    });
 
     // 정렬 적용
     result = sortDomains(result, sortConfig.field, sortConfig.ascending);
