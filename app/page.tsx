@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Domain } from "./types/domain";
-import { parseCSVToDomains, domainsToCSV } from "./utils/domain";
-import DomainList from "./components/DomainList";
+import { loadDomains, filterDomains, sortDomains } from "./utils/domain";
 import DomainModal from "./components/DomainModal";
 import MobileHeader from "./components/MobileHeader";
 import MobileBottomNav from "./components/MobileBottomNav";
-import { FilterOptions } from "./types/domain";
 
 export default function Home() {
   const [domains, setDomains] = useState<Domain[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [filteredDomains, setFilteredDomains] = useState<Domain[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+  const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
+  const [filters, setFilters] = useState({
     extension: "",
     niche: "",
     minValue: "",
@@ -22,139 +20,242 @@ export default function Home() {
     minSearchVolume: "",
     brandingPotential: "",
   });
+  const [sortConfig, setSortConfig] = useState<{
+    field: keyof Domain;
+    ascending: boolean;
+  }>({ field: "name", ascending: true });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+    const fetchDomains = async () => {
+      const data = await loadDomains();
+      setDomains(data);
+      setFilteredDomains(data);
+    };
+    fetchDomains();
+  }, []);
 
-    try {
-      const text = await file.text();
-      const parsedDomains = parseCSVToDomains(text);
-      setDomains(parsedDomains);
-      setError(null);
-    } catch (error) {
-      console.error('CSV 파싱 오류:', error);
-      setError("CSV 파일을 파싱하는 중 오류가 발생했습니다.");
+  useEffect(() => {
+    let result = [...domains];
+
+    // 필터 적용
+    if (filters.extension) {
+      result = result.filter(d => d.extension === filters.extension);
     }
-  };
+    if (filters.niche) {
+      result = result.filter(d => d.niche.includes(filters.niche));
+    }
+    if (filters.minValue) {
+      result = result.filter(d => d.estimatedValue >= parseInt(filters.minValue));
+    }
+    if (filters.maxValue) {
+      result = result.filter(d => d.estimatedValue <= parseInt(filters.maxValue));
+    }
+    if (filters.minSearchVolume) {
+      result = result.filter(d => d.searchVolume >= parseInt(filters.minSearchVolume));
+    }
+    if (filters.brandingPotential) {
+      result = result.filter(d => d.brandingPotential === filters.brandingPotential);
+    }
 
-  const handleExportCSV = () => {
-    const csv = domainsToCSV(domains);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "domains.csv";
-    link.click();
+    // 정렬 적용
+    result = sortDomains(result, sortConfig.field, sortConfig.ascending);
+
+    setFilteredDomains(result);
+  }, [domains, filters, sortConfig]);
+
+  const handleSort = (field: keyof Domain) => {
+    setSortConfig(prev => ({
+      field,
+      ascending: prev.field === field ? !prev.ascending : true
+    }));
   };
 
   const handleAddDomain = () => {
-    setEditingDomain(null);
+    setSelectedDomain(null);
     setIsModalOpen(true);
   };
 
   const handleEditDomain = (domain: Domain) => {
-    setEditingDomain(domain);
+    setSelectedDomain(domain);
     setIsModalOpen(true);
   };
 
-  const handleDeleteDomain = (id: string) => {
-    setDomains(domains.filter((domain) => domain.id !== id));
-  };
-
   const handleSaveDomain = (domainData: Omit<Domain, "id">) => {
-    if (editingDomain) {
-      setDomains(
-        domains.map((domain) =>
-          domain.id === editingDomain.id
-            ? { ...domainData, id: domain.id }
-            : domain
+    if (selectedDomain) {
+      // 수정
+      setDomains(prev =>
+        prev.map(d =>
+          d.id === selectedDomain.id ? { ...domainData, id: d.id } : d
         )
       );
     } else {
-      setDomains([
-        ...domains,
-        { ...domainData, id: Math.random().toString(36).substr(2, 9) },
-      ]);
+      // 추가
+      const newDomain = {
+        ...domainData,
+        id: `domain-${domains.length + 1}`,
+      };
+      setDomains(prev => [...prev, newDomain]);
     }
     setIsModalOpen(false);
   };
 
-  const filteredDomains = domains.filter((domain) => {
-    if (filterOptions.extension && domain.extension !== filterOptions.extension)
-      return false;
-    if (filterOptions.niche && domain.niche !== filterOptions.niche)
-      return false;
-    if (
-      filterOptions.minValue &&
-      domain.estimatedValue < parseInt(filterOptions.minValue)
-    )
-      return false;
-    if (
-      filterOptions.maxValue &&
-      domain.estimatedValue > parseInt(filterOptions.maxValue)
-    )
-      return false;
-    if (
-      filterOptions.minSearchVolume &&
-      domain.searchVolume < parseInt(filterOptions.minSearchVolume)
-    )
-      return false;
-    if (
-      filterOptions.brandingPotential &&
-      domain.brandingPotential !== filterOptions.brandingPotential
-    )
-      return false;
-    return true;
-  });
-
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <MobileHeader />
       
-      <main className="flex-1 overflow-y-auto px-4 py-4">
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <div className="flex flex-col space-y-2">
-            <label className="block">
-              <span className="sr-only">CSV 파일 선택</span>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-indigo-50 file:text-indigo-700
-                  hover:file:bg-indigo-100"
-              />
-            </label>
-            <button
-              onClick={handleExportCSV}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+      <main className="container mx-auto px-4 py-6">
+        {/* 필터 섹션 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <input
+              type="text"
+              placeholder="확장자"
+              value={filters.extension}
+              onChange={(e) => setFilters(prev => ({ ...prev, extension: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
+            />
+            <input
+              type="text"
+              placeholder="분야"
+              value={filters.niche}
+              onChange={(e) => setFilters(prev => ({ ...prev, niche: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
+            />
+            <input
+              type="number"
+              placeholder="최소 가치"
+              value={filters.minValue}
+              onChange={(e) => setFilters(prev => ({ ...prev, minValue: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
+            />
+            <input
+              type="number"
+              placeholder="최대 가치"
+              value={filters.maxValue}
+              onChange={(e) => setFilters(prev => ({ ...prev, maxValue: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
+            />
+            <input
+              type="number"
+              placeholder="최소 검색량"
+              value={filters.minSearchVolume}
+              onChange={(e) => setFilters(prev => ({ ...prev, minSearchVolume: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
+            />
+            <select
+              value={filters.brandingPotential}
+              onChange={(e) => setFilters(prev => ({ ...prev, brandingPotential: e.target.value }))}
+              className="px-3 py-2 border rounded-md"
             >
-              CSV 내보내기
-            </button>
-            <button
-              onClick={handleAddDomain}
-              className="w-full py-2 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-            >
-              새 도메인 추가
-            </button>
+              <option value="">브랜딩 잠재력</option>
+              <option value="낮음">낮음</option>
+              <option value="중간">중간</option>
+              <option value="높음">높음</option>
+            </select>
           </div>
+        </div>
 
-          <DomainList
-            domains={filteredDomains}
-            onEdit={handleEditDomain}
-            onDelete={handleDeleteDomain}
-            filterOptions={filterOptions}
-            onFilterChange={setFilterOptions}
-          />
+        {/* 도메인 목록 */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("name")}
+                  >
+                    도메인
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("extension")}
+                  >
+                    확장자
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("niche")}
+                  >
+                    분야
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("estimatedValue")}
+                  >
+                    예상 가치
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("searchVolume")}
+                  >
+                    검색량
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("brandingPotential")}
+                  >
+                    브랜딩 잠재력
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    작업
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredDomains.map((domain) => (
+                  <tr key={domain.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {domain.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {domain.extension}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {domain.niche}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ${domain.estimatedValue.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {domain.searchVolume.toLocaleString()}/월
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {domain.brandingPotential}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleEditDomain(domain)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      >
+                        수정
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 추가 버튼 */}
+        <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8">
+          <button
+            onClick={handleAddDomain}
+            className="bg-indigo-600 text-white rounded-full p-4 shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M12 4v16m8-8H4"></path>
+            </svg>
+          </button>
         </div>
       </main>
 
@@ -162,7 +263,7 @@ export default function Home() {
 
       {isModalOpen && (
         <DomainModal
-          domain={editingDomain}
+          domain={selectedDomain}
           onSave={handleSaveDomain}
           onClose={() => setIsModalOpen(false)}
         />

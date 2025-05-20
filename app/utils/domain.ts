@@ -34,6 +34,17 @@ export function sortDomains(domains: Domain[], sort: DomainSort): Domain[] {
   });
 }
 
+export async function loadDomains(): Promise<Domain[]> {
+  try {
+    const response = await fetch('/domains.csv');
+    const csvText = await response.text();
+    return parseCSVToDomains(csvText);
+  } catch (error) {
+    console.error('Error loading domains:', error);
+    return [];
+  }
+}
+
 export function parseCSVToDomains(csvText: string): Domain[] {
   const lines = csvText.split("\n");
   const headers = lines[0].split(",").map((h) => h.trim());
@@ -99,4 +110,40 @@ export function domainsToCSV(domains: Domain[]): string {
   ]);
 
   return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+}
+
+export function filterDomains(domains: Domain[], filters: {
+  extension?: string;
+  niche?: string;
+  minValue?: number;
+  maxValue?: number;
+  minSearchVolume?: number;
+  brandingPotential?: BrandingPotential;
+}): Domain[] {
+  return domains.filter(domain => {
+    if (filters.extension && domain.extension !== filters.extension) return false;
+    if (filters.niche && !domain.niche.includes(filters.niche)) return false;
+    if (filters.minValue && domain.estimatedValue < filters.minValue) return false;
+    if (filters.maxValue && domain.estimatedValue > filters.maxValue) return false;
+    if (filters.minSearchVolume && domain.searchVolume < filters.minSearchVolume) return false;
+    if (filters.brandingPotential && domain.brandingPotential !== filters.brandingPotential) return false;
+    return true;
+  });
+}
+
+export function sortDomains(domains: Domain[], sortBy: keyof Domain, ascending: boolean = true): Domain[] {
+  return [...domains].sort((a, b) => {
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return ascending ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    }
+
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return ascending ? aValue - bValue : bValue - aValue;
+    }
+
+    return 0;
+  });
 } 
