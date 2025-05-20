@@ -1,155 +1,184 @@
-import type { Domain } from '../types/domain';
+"use client";
+
+import { Domain } from "../types/domain";
+import { useState, useEffect } from "react";
 
 interface DomainModalProps {
-  isOpen: boolean;
+  domain: Domain | null;
+  onSave: (domain: Omit<Domain, "id">) => void;
   onClose: () => void;
-  onSave: (domain: Omit<Domain, 'id'>) => void;
-  domain?: Domain;
-  isEditing: boolean;
 }
 
-export default function DomainModal({ isOpen, onClose, onSave, domain, isEditing }: DomainModalProps) {
-  if (!isOpen) return null;
+export default function DomainModal({
+  domain,
+  onSave,
+  onClose,
+}: DomainModalProps) {
+  const [formData, setFormData] = useState<Omit<Domain, "id">>({
+    name: "",
+    extension: "",
+    niche: "",
+    estimatedValue: 0,
+    searchVolume: 0,
+    brandingPotential: "중간",
+    notes: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (domain) {
+      setFormData({
+        name: domain.name,
+        extension: domain.extension,
+        niche: domain.niche,
+        estimatedValue: domain.estimatedValue,
+        searchVolume: domain.searchVolume,
+        brandingPotential: domain.brandingPotential,
+        notes: domain.notes,
+      });
+    }
+  }, [domain]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const domainData: Omit<Domain, 'id'> = {
-      name: formData.get('name') as string,
-      extension: formData.get('extension') as string,
-      niche: formData.get('niche') as string,
-      estimatedValue: parseInt(formData.get('estimatedValue') as string),
-      searchVolume: parseInt(formData.get('searchVolume') as string),
-      brandingPotential: formData.get('brandingPotential') as string,
-      notes: formData.get('notes') as string,
-    };
-
-    onSave(domainData);
+    onSave(formData);
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-semibold mb-4">
-          {isEditing ? '도메인 수정' : '새 도메인 추가'}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                도메인 이름
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                defaultValue={domain?.name}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="extension" className="block text-sm font-medium text-gray-700">
-                확장자
-              </label>
-              <input
-                type="text"
-                id="extension"
-                name="extension"
-                defaultValue={domain?.extension}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="niche" className="block text-sm font-medium text-gray-700">
-                분야
-              </label>
-              <select
-                id="niche"
-                name="niche"
-                defaultValue={domain?.niche}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="">선택하세요</option>
-                <option value="Technology">기술</option>
-                <option value="Finance">금융</option>
-                <option value="Health">건강</option>
-                <option value="Education">교육</option>
-                <option value="Entertainment">엔터테인먼트</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="estimatedValue" className="block text-sm font-medium text-gray-700">
-                예상 가치 ($)
-              </label>
-              <input
-                type="number"
-                id="estimatedValue"
-                name="estimatedValue"
-                defaultValue={domain?.estimatedValue}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="searchVolume" className="block text-sm font-medium text-gray-700">
-                검색량
-              </label>
-              <input
-                type="number"
-                id="searchVolume"
-                name="searchVolume"
-                defaultValue={domain?.searchVolume}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="brandingPotential" className="block text-sm font-medium text-gray-700">
-                브랜딩 잠재력
-              </label>
-              <select
-                id="brandingPotential"
-                name="brandingPotential"
-                defaultValue={domain?.brandingPotential}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="">선택하세요</option>
-                <option value="High">높음</option>
-                <option value="Medium">중간</option>
-                <option value="Low">낮음</option>
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                메모
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                defaultValue={domain?.notes}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">
+            {domain ? "도메인 수정" : "새 도메인 추가"}
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              도메인 이름
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            />
           </div>
-          <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              확장자
+            </label>
+            <input
+              type="text"
+              value={formData.extension}
+              onChange={(e) =>
+                setFormData({ ...formData, extension: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              분야
+            </label>
+            <input
+              type="text"
+              value={formData.niche}
+              onChange={(e) =>
+                setFormData({ ...formData, niche: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              예상 가치 ($)
+            </label>
+            <input
+              type="number"
+              value={formData.estimatedValue}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  estimatedValue: parseInt(e.target.value) || 0,
+                })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              검색량 (월)
+            </label>
+            <input
+              type="number"
+              value={formData.searchVolume}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  searchVolume: parseInt(e.target.value) || 0,
+                })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              브랜딩 잠재력
+            </label>
+            <select
+              value={formData.brandingPotential}
+              onChange={(e) =>
+                setFormData({ ...formData, brandingPotential: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+            >
+              <option value="낮음">낮음</option>
+              <option value="중간">중간</option>
+              <option value="높음">높음</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              메모
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              rows={3}
+            />
+          </div>
+
+          <div className="flex space-x-2 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
             >
               취소
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
             >
-              {isEditing ? '수정' : '추가'}
+              저장
             </button>
           </div>
         </form>
