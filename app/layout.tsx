@@ -1,3 +1,5 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -16,6 +18,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <html lang="ko">
       <body className={inter.className}>
@@ -48,7 +52,8 @@ export default function RootLayout({
                   type="button"
                   className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
                   aria-controls="mobile-menu"
-                  aria-expanded="false"
+                  aria-expanded={isMobileMenuOpen}
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                   <span className="sr-only">메뉴 열기</span>
                   <svg
@@ -72,17 +77,19 @@ export default function RootLayout({
           </div>
 
           {/* 모바일 메뉴 */}
-          <div className="sm:hidden" id="mobile-menu">
+          <div className={`sm:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`} id="mobile-menu">
             <div className="pt-2 pb-3 space-y-1">
               <Link
                 href="/"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 홈
               </Link>
               <Link
                 href="/domains"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 도메인 분석
               </Link>
