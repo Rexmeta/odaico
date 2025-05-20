@@ -32,7 +32,8 @@ export default function Home() {
       const parsedDomains = parseCSVToDomains(text);
       setDomains(parsedDomains);
       setError(null);
-    } catch (err) {
+    } catch (error) {
+      console.error('CSV 파싱 오류:', error);
       setError("CSV 파일을 파싱하는 중 오류가 발생했습니다.");
     }
   };
