@@ -5,7 +5,7 @@ export interface Domain {
   niche: string;
   estimatedValue: number;
   searchVolume: number;
-  brandingPotential: string;
+  brandingPotential: BrandingPotential;
   notes: string;
 }
 
