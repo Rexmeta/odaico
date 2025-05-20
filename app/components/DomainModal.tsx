@@ -1,6 +1,6 @@
 "use client";
 
-import { Domain } from "../types/domain";
+import { Domain, BrandingPotential } from "../types/domain";
 import { useState, useEffect } from "react";
 
 interface DomainModalProps {
@@ -41,6 +41,11 @@ export default function DomainModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
+  };
+
+  const handleBrandingPotentialChange = (value: string) => {
+    const potential = value as BrandingPotential;
+    setFormData({ ...formData, brandingPotential: potential });
   };
 
   return (
@@ -140,9 +145,7 @@ export default function DomainModal({
             </label>
             <select
               value={formData.brandingPotential}
-              onChange={(e) =>
-                setFormData({ ...formData, brandingPotential: e.target.value })
-              }
+              onChange={(e) => handleBrandingPotentialChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             >
